@@ -1,7 +1,10 @@
 ﻿using BookApi.Data;
+using BookApi.DTOs;
 using BookApi.Models;
 using BookApi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace BookApi.Controllers
 {
@@ -31,6 +34,21 @@ namespace BookApi.Controllers
             var token = _jwt.GenerateToken(user);
 
             return Ok(new { token });
+        }
+
+
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] LoginRequest request)
+        {
+            var user = new User
+            {
+                Username = request.Username,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password, workFactor: 12),
+            };
+
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+            return Ok("Le user est créé");
         }
     }
 }
